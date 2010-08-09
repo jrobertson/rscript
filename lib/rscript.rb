@@ -49,7 +49,7 @@ class RScript < RScriptBase
       end
       
     else    
-      out = run_rsf(args) {|doc| doc.root.elements.to_a('//script').map {|s| read_script(s)}}    
+      out = read_rsf(args) {|doc| doc.root.elements.to_a('//script').map {|s| read_script(s)}}    
     end 
 
     [out, args]
