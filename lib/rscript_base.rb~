@@ -21,7 +21,7 @@ class RScriptBase
     out_buffer = ''
     src = script.attribute('src')
     if src then
-      out_buffer = read_sourcecode(script.attribute('src').value)
+      out_buffer = read_sourcecode(script.attribute('src').value.to_s)
     else
       code = script.text.to_s.strip.length > 0 ? script.text : script.cdatas.join.strip
       out_buffer = code
@@ -31,10 +31,10 @@ class RScriptBase
         
   def read_sourcecode(rsf)
     if rsf[/https?:\/\//] then
-      @url_dir = File.dirname rsf
+      @url_base = rsf[/\w+:\/\/[^\/]+/]
       return open(rsf, "UserAgent" => "Ruby-SourceCodeReader").read
-    elsif
-      return 
+    elsif rsf[/^\//]
+      return @url_base.to_s + rsf.to_s
     else
       return File.open(rsf,'r').read
     end
