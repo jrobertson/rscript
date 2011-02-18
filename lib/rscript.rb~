@@ -63,7 +63,7 @@ class RScript < RScriptBase
     rsfile = args[0]; args.shift
 
     $rsfile = rsfile[/[a-zA-z0-9]+(?=\.rsf)/]
-    doc = @rsf_cache.read(args.join) { Document.new(read_sourcecode(rsfile)) }
+    doc = @rsf_cache.read(rsfile) { Document.new(read_sourcecode(rsfile)) }
     yield(doc)
   end
           

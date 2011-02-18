@@ -2,7 +2,7 @@
 #file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 09-Jul-2010
+# updated: 18-Feb-2011
 
 # description
 #  - This script executes Ruby script contained within an XML file.

@@ -31,10 +31,10 @@ class RScriptBase
         
   def read_sourcecode(rsf)
     if rsf[/https?:\/\//] then
-      @url_base = rsf[/\w+:\/\/[^\/]+/]
+      @url_dir = File.dirname rsf
       return open(rsf, "UserAgent" => "Ruby-SourceCodeReader").read
-    elsif rsf[/^\//]
-      return @url_base + rsf
+    elsif
+      return 
     else
       return File.open(rsf,'r').read
     end
