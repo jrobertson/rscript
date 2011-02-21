@@ -2,7 +2,7 @@
 #file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 09-Jul-2010
+# updated: 18-Feb-2011
 
 # description
 #  - This script executes Ruby script contained within an XML file.
@@ -21,7 +21,7 @@
 #  http://www.opensource.org/licenses/mit-license.php
 
 
-require 'rscript_base'
+require '/home/james/learning/ruby/rscript_base'
 require 'hashcache'
 
 class RScript < RScriptBase
@@ -56,17 +56,37 @@ class RScript < RScriptBase
 
     [out, args]
   end
+
+  def reset()
+    @rsf_cache.reset
+  end
   
   private
+
+  def read_doc_rsf(args=[])
+    rsfile = args[0]; args.shift
+
+    $rsfile = rsfile[/[a-zA-z0-9]+(?=\.rsf)/]
+
+    @url_base = rsfile[/\w+:\/\/[^\/]+/]
+    buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
+
+    doc =  Document.new(buffer)
+    yield(doc)
+
+  end
+  
       
   def read_rsf(args=[])
     rsfile = args[0]; args.shift
 
     $rsfile = rsfile[/[a-zA-z0-9]+(?=\.rsf)/]
-    doc = @rsf_cache.read(rsfile) { Document.new(read_sourcecode(rsfile)) }
+    buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
+    @url_base = rsfile[/\w+:\/\/[^\/]+/]
+    doc =  Document.new(buffer)
     yield(doc)
-  end
-          
+
+  end          
   
 end
 

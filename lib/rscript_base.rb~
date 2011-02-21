@@ -34,7 +34,7 @@ class RScriptBase
       @url_base = rsf[/\w+:\/\/[^\/]+/]
       return open(rsf, "UserAgent" => "Ruby-SourceCodeReader").read
     elsif rsf[/^\//]
-      return @url_base.to_s + rsf.to_s
+      return open(@url_base + rsf, "UserAgent" => "Ruby-SourceCodeReader").read
     else
       return File.open(rsf,'r').read
     end
