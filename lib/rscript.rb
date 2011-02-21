@@ -21,7 +21,7 @@
 #  http://www.opensource.org/licenses/mit-license.php
 
 
-require '/home/james/learning/ruby/rscript_base'
+require 'rscript_base'
 require 'hashcache'
 
 class RScript < RScriptBase
