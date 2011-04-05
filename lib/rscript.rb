@@ -22,11 +22,12 @@
 
 
 require 'rscript_base'
+require 'hashcache'
 
 class RScript < RScriptBase
 
   def initialize()
-
+    @rsf_cache = HashCache.new(cache: 5)
   end
   
   def read(args=[])
@@ -56,6 +57,9 @@ class RScript < RScriptBase
     [out, args]
   end
 
+  def reset()
+    @rsf_cache.reset
+  end
   
   private
 
@@ -65,7 +69,7 @@ class RScript < RScriptBase
     $rsfile = rsfile[/[a-zA-z0-9]+(?=\.rsf)/]
 
     @url_base = rsfile[/\w+:\/\/[^\/]+/]
-    buffer = read_sourcecode(rsfile)
+    buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
 
     doc =  Document.new(buffer)
     yield(doc)
@@ -77,7 +81,7 @@ class RScript < RScriptBase
     rsfile = args[0]; args.shift
 
     $rsfile = rsfile[/[a-zA-z0-9]+(?=\.rsf)/]
-    buffer = read_sourcecode(rsfile) 
+    buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
     @url_base = rsfile[/\w+:\/\/[^\/]+/]
     doc =  Document.new(buffer)
     yield(doc)
