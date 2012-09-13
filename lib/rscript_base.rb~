@@ -4,6 +4,7 @@
 
 require 'cgi'
 require 'open-uri'
+require 'rxfhelper'
 require 'rexml/document'
 include REXML
 
@@ -32,14 +33,9 @@ class RScriptBase
   end
         
   def read_sourcecode(rsf)
-    if rsf[/https?:\/\//] then
-      return open(rsf, "UserAgent" => "Ruby-SourceCodeReader").read
-    elsif rsf[/^\//]
-      return open(@url_base + rsf, "UserAgent" => "Ruby-SourceCodeReader").read
-    else
-      return File.open(rsf.sub(%r{^file://}, ''),'r').read
-    end
-  end          
+    buffer,type = RXFHelper.read rsf
+    buffer
+  end                   
   
 end
 
