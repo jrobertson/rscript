@@ -1,15 +1,15 @@
 #!/usr/bin/env ruby
-
 #file: rscript_base.rb
 
 require 'cgi'
 require 'open-uri'
 require 'rxfhelper'
 require 'rexml/document'
-include REXML
+#include REXML
 
 class RScriptBase
-
+  include REXML
+  
   def initialize()
   end
   
@@ -33,9 +33,15 @@ class RScriptBase
   end
         
   def read_sourcecode(rsf)
-    buffer,type = RXFHelper.read rsf
-    buffer
-  end                   
+    
+    buffer, type = RXFHelper.read rsf
+    
+    case type
+      when :url, :file
+        buffer
+      when :relative_url
+        open(@url_base + rsf, "UserAgent" => "rscript").read
+    end
+  end          
   
 end
-
