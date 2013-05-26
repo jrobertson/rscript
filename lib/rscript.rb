@@ -1,8 +1,6 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 #file: rscript.rb
 
-# created:  1-Jul-2009
-# updated: 18-Feb-2011
 
 # description
 #  - This script executes Ruby script contained within an XML file.
@@ -80,7 +78,7 @@ class RScript < RScriptBase
   def read_rsf(args=[])
     rsfile = args[0]; args.shift
 
-    $rsfile = rsfile[/[a-zA-z0-9]+(?=\.rsf)/]
+    $rsfile = rsfile[/[^\/]+(?=\.rsf)/]
     buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
     @url_base = rsfile[/\w+:\/\/[^\/]+/]
     doc =  Document.new(buffer)
