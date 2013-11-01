@@ -27,16 +27,11 @@
 # MIT license - basically you can do anything you like with the script.
 #  http://www.opensource.org/licenses/mit-license.php
 
-#=begin
-require 'requestor'
 
-code = Requestor.read('http://rorbuilder.info/r/ruby/') do |x|
-  x.require 'rscript_base'
-  x.require 'hashcache'
-  x.require 'xthreads'
-end
-eval code
-#=end
+require 'rscript_base'
+require 'hashcache'
+require 'xthreads'
+
 class RScript < RScriptBase
 
   def initialize(opt={})
