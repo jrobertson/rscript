@@ -99,6 +99,8 @@ class RScript < RScriptBase
 
       
       xthread = @xthreads.create_thread('thread' + @id.to_s) { eval code2}
+      xthread.start
+
       @id += 1
       r = xthread.result
       params = {}
