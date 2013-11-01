@@ -3,10 +3,11 @@
 #file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 08-Aug-2013
+# updated: 01-Nov-2013
 
 # modification:
 
+  # 01-Nov-2013: XThreads now handles the execution of eval statements;
   # 08-Aug-2013: re-enabled the hashcache;
   # 24-Jun-2011: disabled the hashcache
 
@@ -26,14 +27,22 @@
 # MIT license - basically you can do anything you like with the script.
 #  http://www.opensource.org/licenses/mit-license.php
 
-require 'rscript_base'
-require 'hashcache'
+#=begin
+require 'requestor'
 
-
+code = Requestor.read('http://rorbuilder.info/r/ruby/') do |x|
+  x.require 'rscript_base'
+  x.require 'hashcache'
+  x.require 'xthreads'
+end
+eval code
+#=end
 class RScript < RScriptBase
 
   def initialize(opt={})
     @rsf_cache = HashCache.new({cache: 5}.merge(opt))
+    @xthreads = XThreads.new
+    @id = 0
   end
   
   def read(args=[])
@@ -88,7 +97,10 @@ class RScript < RScriptBase
     
     begin
 
-      r = eval code2
+      
+      xthread = @xthreads.create_thread('thread' + @id.to_s) { eval code2}
+      @id += 1
+      r = xthread.result
       params = {}
       return r          
 
