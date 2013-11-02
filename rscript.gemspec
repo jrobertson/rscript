@@ -1,12 +1,11 @@
 Gem::Specification.new do |s|
   s.name = 'rscript'
-  s.version = '0.1.23'
+  s.version = '0.1.24'
   s.summary = 'rscript previously known as rcscript, reads Ruby code which is embedded within an rscript XML file.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/**/*.rb']
   s.add_dependency('hashcache')
   s.add_dependency('rxfhelper')
-  s.add_dependency('xthreads') 
   s.signing_key = '../privatekeys/rscript.pem'
   s.cert_chain  = ['gem-public_cert.pem']
   s.license = 'MIT'
