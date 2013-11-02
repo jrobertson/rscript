@@ -3,10 +3,11 @@
 #file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 01-Nov-2013
+# updated: 02-Nov-2013
 
 # modification:
 
+  # 02-Nov-2013: Replaced XThreads with a simle thread
   # 01-Nov-2013: XThreads now handles the execution of eval statements;
   # 08-Aug-2013: re-enabled the hashcache;
   # 24-Jun-2011: disabled the hashcache
@@ -30,14 +31,12 @@
 
 require 'rscript_base'
 require 'hashcache'
-require 'xthreads'
+
 
 class RScript < RScriptBase
 
   def initialize(opt={})
     @rsf_cache = HashCache.new({cache: 5}.merge(opt))
-    @xthreads = XThreads.new
-    @id = 0
   end
   
   def read(args=[])
@@ -91,13 +90,13 @@ class RScript < RScriptBase
     code2, args = self.read raw_args
     
     begin
-
       
-      xthread = @xthreads.create_thread('thread' + @id.to_s) { eval code2}
-      xthread.start
+      
+      thread = Thread.new(code2) {|x| Thread.current['result'] = eval x}
+      thread.join
+      #r = eval code2
+      r = thread['result']
 
-      @id += 1
-      r = xthread.result
       params = {}
       return r          
 
