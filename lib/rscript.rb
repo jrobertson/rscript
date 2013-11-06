@@ -3,10 +3,11 @@
 #file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 02-Nov-2013
+# updated: 06-Nov-2013
 
 # modification:
 
+  # 06-Nov-2013: An error is now raised if the job doesn't exist
   # 02-Nov-2013: Replaced XThreads with a simle thread
   # 01-Nov-2013: XThreads now handles the execution of eval statements;
   # 08-Aug-2013: re-enabled the hashcache;
@@ -28,11 +29,15 @@
 # MIT license - basically you can do anything you like with the script.
 #  http://www.opensource.org/licenses/mit-license.php
 
+#=begin
+require 'requestor'
 
-require 'rscript_base'
-require 'hashcache'
-
-
+code = Requestor.read('http://rorbuilder.info/r/ruby/') do |x|
+  x.require 'rscript_base'
+  x.require 'hashcache'
+end
+eval code
+#=end
 class RScript < RScriptBase
 
   def initialize(opt={})
@@ -58,6 +63,9 @@ class RScript < RScriptBase
           job.elements.to_a('script').map {|s| read_script(s)}.join("\n")
         end.join("\n")
       end
+
+      raise "job not found" unless out.length > 0
+      out
       
     else    
       out = read_rsf(args) {|doc| doc.root.elements.to_a('//script').map {|s| read_script(s)}}    
