@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-#file: rscript.rb
+# file: rscript.rb
 
 # created:  1-Jul-2009
 # updated: 06-Nov-2013
@@ -29,15 +29,11 @@
 # MIT license - basically you can do anything you like with the script.
 #  http://www.opensource.org/licenses/mit-license.php
 
-#=begin
-require 'requestor'
 
-code = Requestor.read('http://rorbuilder.info/r/ruby/') do |x|
-  x.require 'rscript_base'
-  x.require 'hashcache'
-end
-eval code
-#=end
+require 'rscript_base'
+require 'hashcache'
+
+
 class RScript < RScriptBase
 
   def initialize(opt={})
