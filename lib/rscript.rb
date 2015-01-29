@@ -2,11 +2,13 @@
 
 # file: rscript.rb
 
+
 # created:  1-Jul-2009
-# updated: 06-Nov-2013
+# updated: 29-Jan-2015
 
 # modification:
 
+  # 29-Jan-2015: Replaced REXML with Rexle
   # 06-Nov-2013: An error is now raised if the job doesn't exist
   # 02-Nov-2013: Replaced XThreads with a simle thread
   # 01-Nov-2013: XThreads now handles the execution of eval statements;
@@ -32,6 +34,7 @@
 
 require 'rscript_base'
 require 'hashcache'
+require 'rexle'
 
 
 class RScript < RScriptBase
@@ -55,16 +58,16 @@ class RScript < RScriptBase
       args.compact!
 
       out = read_rsf(args) do |doc|
-        doc.root.elements.to_a("//job[#{ajob.join(' or ')}]").map do |job|
-          job.elements.to_a('script').map {|s| read_script(s)}.join("\n")
-        end.join("\n")
+        doc.root.xpath("//job[#{ajob.join(' or ')}]").map do |job|
+          job.xpath('script').map {|s| read_script(s)}.join("\n")
+        end.join("\n")        
       end
 
       raise "job not found" unless out.length > 0
       out
       
     else    
-      out = read_rsf(args) {|doc| doc.root.elements.to_a('//script').map {|s| read_script(s)}}    
+      out = read_rsf(args) {|doc| doc.root.xpath('//script').map {|s| read_script(s)}}    
     end 
 
     [out, args]
@@ -122,7 +125,7 @@ class RScript < RScriptBase
     buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
     #jr080813 buffer = read_sourcecode(rsfile) 
 
-    doc =  Document.new(buffer)
+    doc =  Rexle.new(buffer)
     yield(doc)
 
   end
@@ -133,9 +136,10 @@ class RScript < RScriptBase
 
     $rsfile = rsfile[/[^\/]+(?=\.rsf)/]
     buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
-    #jr080813 buffer = read_sourcecode(rsfile) 
+
     @url_base = rsfile[/\w+:\/\/[^\/]+/]
-    doc =  Document.new(buffer)
+
+    doc =  Rexle.new(buffer)
     yield(doc)
 
   end          

@@ -40,7 +40,7 @@ class RScriptBase
       when :url, :file
         buffer
       when :relative_url
-        open(@url_base + rsf, "UserAgent" => "rscript").read
+        open(@url_base + rsf, "UserAgent" => "rscript"){|x| x.read}
     end
   end          
   

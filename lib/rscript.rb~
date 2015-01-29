@@ -2,11 +2,13 @@
 
 # file: rscript.rb
 
+
 # created:  1-Jul-2009
-# updated: 06-Nov-2013
+# updated: 29-Jan-2015
 
 # modification:
 
+  # 29-Jan-2015: Replaced REXML with Rexle
   # 06-Nov-2013: An error is now raised if the job doesn't exist
   # 02-Nov-2013: Replaced XThreads with a simle thread
   # 01-Nov-2013: XThreads now handles the execution of eval statements;
@@ -32,6 +34,8 @@
 
 require 'rscript_base'
 require 'hashcache'
+require 'rexle'
+
 
 class RScript < RScriptBase
 
