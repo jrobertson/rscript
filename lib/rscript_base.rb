@@ -24,7 +24,7 @@ class RScriptBase
 
     if src then
 
-      out_buffer = read_sourcecode(script.attributes[:src].value.to_s)
+      out_buffer = read_sourcecode(script.attributes[:src].to_s)
     else
       code = script.text.strip.length > 0 ? script.text : script.cdatas.join.strip
       out_buffer = code
