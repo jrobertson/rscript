@@ -19,16 +19,15 @@ class RScriptBase
   
   def read_script(script)  
     out_buffer = ''
-
+    
     src = script.attributes[:src]
 
-    if src then
-
-      out_buffer = read_sourcecode(script.attributes[:src].to_s)
+    out_buffer = if src then
+      read_sourcecode(script.attributes[:src].to_s)
     else
-      code = script.text.strip.length > 0 ? script.text : script.cdatas.join.strip
-      out_buffer = code
+      script.texts.join("\n")
     end
+    
     out_buffer
   end
         
