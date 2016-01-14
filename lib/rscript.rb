@@ -4,10 +4,11 @@
 
 
 # created:  1-Jul-2009
-# updated: 29-Jan-2015
+# updated: 14-Jan-2016
 
 # modification:
 
+  # 14-Jan-2016: Replaced the simple thread with just the eval
   # 29-Jan-2015: Replaced REXML with Rexle
   # 06-Nov-2013: An error is now raised if the job doesn't exist
   # 02-Nov-2013: Replaced XThreads with a simle thread
@@ -39,12 +40,24 @@ require 'rexle'
 
 class RScript < RScriptBase
 
-  def initialize(opt={})
+  def initialize(opt={}, log: nil)
+    
+    @logger = Logger.new log, 'daily' if log
     @rsf_cache = HashCache.new({cache: 5}.merge(opt))
+    
   end
   
   def read(args=[])
+
+    if @logger then
+      
+      @logger.debug 'inside RScript#read' 
+      @logger.debug 'RScript -> args: ' + args.inspect
+      
+    end
+    
     threads = []
+    
     if args.to_s[/\/\/job:/] then 
 
       ajob = []
@@ -67,8 +80,10 @@ class RScript < RScriptBase
       out
       
     else    
-      out = read_rsf(args) {|doc| doc.root.xpath('//script').map {|s| read_script(s)}}    
-    end 
+      out = read_rsf(args) {|doc| doc.root.xpath('//script').map {|s| read_script(s)}}.join("\n")   
+    end
+    
+    @logger.debug 'RScript -> out: ' + out.inspect if @logger
 
     [out, args]
   end
@@ -80,6 +95,11 @@ class RScript < RScriptBase
   # note: run() was copied from the development file rscript-wrapper.rb
   def run(raw_args, params={}, rws=nil)
 
+    if @logger then
+      @logger.debug 'inside RScript#run' 
+      @logger.debug 'RScript -> raw_args: ' + raw_args.inspect
+    end
+    
     if params[:splat] then
       params.each do  |k,v|
         params.delete k unless k == :splat or k == :package or k == :job or k == :captures
@@ -93,16 +113,26 @@ class RScript < RScriptBase
       end
       params.merge! h
     end            
-
+    
     code2, args = self.read raw_args
+    @logger.debug 'RScript -> code2: ' + code2.inspect if @logger
     
     begin
       
-      
-      thread = Thread.new(code2) {|x| Thread.current['result'] = eval x}
+=begin      
+      thread = Thread.new(code2) do |x| 
+        
+        begin
+          Thread.current['result'] = eval x
+        rescue
+          @logger.debug('RScript -> eval: ' + ($!).inspect) if @logger
+        end
+        
+      end
       thread.join
-      #r = eval code2
-      r = thread['result']
+=end      
+      r = eval code2
+      #r = thread['result']
 
       params = {}
       return r          
@@ -115,6 +145,7 @@ class RScript < RScriptBase
   end  
   
   private
+  
 
   def read_doc_rsf(args=[])
     rsfile = args[0]; args.shift
@@ -123,7 +154,6 @@ class RScript < RScriptBase
 
     @url_base = rsfile[/\w+:\/\/[^\/]+/]
     buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
-    #jr080813 buffer = read_sourcecode(rsfile) 
 
     doc =  Rexle.new(buffer)
     yield(doc)
@@ -133,7 +163,7 @@ class RScript < RScriptBase
       
   def read_rsf(args=[])
     rsfile = args[0]; args.shift
-
+    
     $rsfile = rsfile[/[^\/]+(?=\.rsf)/]
     buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
 
