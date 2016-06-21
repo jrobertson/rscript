@@ -2,13 +2,12 @@
 
 # file: rscript.rb
 
-
 # created:  1-Jul-2009
-# updated: 14-Jan-2016
+# updated: 21-Jun-2016
 
 # modification:
 
-  # 14-Jan-2016: Replaced the simple thread with just the eval
+  # 21-Jun-2016: Replaced the initialize hash options with inline named params
   # 29-Jan-2015: Replaced REXML with Rexle
   # 06-Nov-2013: An error is now raised if the job doesn't exist
   # 02-Nov-2013: Replaced XThreads with a simle thread
@@ -33,6 +32,7 @@
 #  http://www.opensource.org/licenses/mit-license.php
 
 
+
 require 'rscript_base'
 require 'hashcache'
 require 'rexle'
@@ -40,10 +40,11 @@ require 'rexle'
 
 class RScript < RScriptBase
 
-  def initialize(opt={}, log: nil)
+  def initialize(logfile: '', logrotate: 'daily', pkg_src: '', cache: true)
     
-    @logger = Logger.new log, 'daily' if log
-    @rsf_cache = HashCache.new({cache: 5}.merge(opt))
+    @logger = Logger.new logfile, logrotate unless logfile.empty?
+    @cache = cache
+    @rsf_cache = HashCache.new({cache: 5}) if cache
     
   end
   
@@ -83,7 +84,7 @@ class RScript < RScriptBase
       out = read_rsf(args) {|doc| doc.root.xpath('//script').map {|s| read_script(s)}}.join("\n")   
     end
     
-    @logger.debug 'RScript -> out: ' + out.inspect if @logger
+    @logger.debug 'RScript -> out: ' + out.inspect[0..250] if @logger
 
     [out, args]
   end
@@ -115,7 +116,7 @@ class RScript < RScriptBase
     end            
     
     code2, args = self.read raw_args
-    @logger.debug 'RScript -> code2: ' + code2.inspect if @logger
+    @logger.debug 'RScript -> code2: ' + code2.inspect[0..250] if @logger
     
     begin
       
@@ -131,41 +132,35 @@ class RScript < RScriptBase
       end
       thread.join
 =end      
+      #puts 'code2 :'  + code2.inspect
       r = eval code2
       #r = thread['result']
 
       params = {}
+
       return r          
 
     rescue Exception => e  
       params = {}
       err_label = e.message.to_s + " :: \n" + e.backtrace.join("\n")      
       return err_label
-    end        
+    end
+
   end  
   
-  private
-  
-
-  def read_doc_rsf(args=[])
-    rsfile = args[0]; args.shift
-
-    $rsfile = rsfile[/[a-zA-z0-9]+(?=\.rsf)/]
-
-    @url_base = rsfile[/\w+:\/\/[^\/]+/]
-    buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
-
-    doc =  Rexle.new(buffer)
-    yield(doc)
-
-  end
-  
+  private    
       
   def read_rsf(args=[])
+    
     rsfile = args[0]; args.shift
     
     $rsfile = rsfile[/[^\/]+(?=\.rsf)/]
-    buffer = @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
+    
+    buffer = if @cache then
+      @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
+    else
+      read_sourcecode(rsfile)
+    end
 
     @url_base = rsfile[/\w+:\/\/[^\/]+/]
 
