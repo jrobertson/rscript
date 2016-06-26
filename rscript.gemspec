@@ -1,9 +1,9 @@
 Gem::Specification.new do |s|
   s.name = 'rscript'
-  s.version = '0.2.4'
+  s.version = '0.3.1'
   s.summary = 'rscript previously known as rcscript, reads Ruby code which is embedded within an rscript XML file.'
   s.authors = ['James Robertson']
-  s.files = Dir['lib/rscript.rb']
+  s.files = Dir['lib/rscript.rb', 'lib/rscript_base.rb']
   s.add_runtime_dependency('hashcache', '~> 0.2', '>=0.2.10')
   s.add_runtime_dependency('rxfhelper', '~> 0.3', '>=0.3.0')
   s.add_runtime_dependency('rexle', '~> 1.3', '>=1.3.34')
