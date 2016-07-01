@@ -7,6 +7,7 @@
 
 # modification:
 
+  # 01-Jul-2016: Ignores the logfile if the arg is nil
   # 26-Jun-2016: The .rb files are now located within the rscript file directory
   # 21-Jun-2016: Replaced the initialize hash options with inline named params
   # 29-Jan-2015: Replaced REXML with Rexle
@@ -42,7 +43,7 @@ class RScript < RScriptBase
 
   def initialize(logfile: '', logrotate: 'daily', pkg_src: '', cache: true)
     
-    @logger = Logger.new logfile, logrotate unless logfile.empty?
+    @logger = Logger.new logfile, logrotate unless logfile.nil? or logfile.empty?
     @cache = cache
     @rsf_cache = HashCache.new({cache: 5}) if cache
     
