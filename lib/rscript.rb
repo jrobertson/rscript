@@ -3,12 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 26-Jun-2016
+# updated: 12-Dec-2016
 
 # modification:
 
-  # 01-Jul-2016: Ignores the logfile if the arg is nil
-  # 26-Jun-2016: The .rb files are now located within the rscript file directory
+  # 12-Dec-2016: The cache size can now be changed from initialize()
   # 21-Jun-2016: Replaced the initialize hash options with inline named params
   # 29-Jan-2015: Replaced REXML with Rexle
   # 06-Nov-2013: An error is now raised if the job doesn't exist
@@ -41,11 +40,11 @@ require 'rexle'
 
 class RScript < RScriptBase
 
-  def initialize(logfile: '', logrotate: 'daily', pkg_src: '', cache: true)
+  def initialize(logfile: '', logrotate: 'daily', pkg_src: '', cache: 5)
     
     @logger = Logger.new logfile, logrotate unless logfile.nil? or logfile.empty?
     @cache = cache
-    @rsf_cache = HashCache.new({cache: 5}) if cache
+    @rsf_cache = HashCache.new({cache: cache}) if cache > 0
     
   end
   
@@ -95,7 +94,7 @@ class RScript < RScriptBase
   end
 
   # note: run() was copied from the development file rscript-wrapper.rb
-  def run(raw_args, params={}, rws=nil)
+  def run(raw_args, params={}, rws=self)
 
     if @logger then
       @logger.debug 'inside RScript#run' 
