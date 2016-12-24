@@ -3,10 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 12-Dec-2016
+# updated: 24-Dec-2016
 
 # modification:
 
+  # 24-Dec-2016: Bug fix: An argument can now include an integer
   # 12-Dec-2016: The cache size can now be changed from initialize()
   # 21-Jun-2016: Replaced the initialize hash options with inline named params
   # 29-Jan-2015: Replaced REXML with Rexle
@@ -64,7 +65,7 @@ class RScript < RScriptBase
       ajob = []
       
       args.each_index do |i| 
-        if args[i][/\/\/job:/] then          
+        if args[i].to_s[/\/\/job:/] then          
           ajob << "@id='#{$'}'"; args[i] = nil
         end
       end
