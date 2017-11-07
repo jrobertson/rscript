@@ -2,11 +2,12 @@
 
 # file: rscript.rb
 
-# created:  1-Jul-2009
-# updated: 24-Dec-2016
+# created: 1-Jul-2009
+# updated: 7-Nov-2017
 
 # modification:
 
+  # 07-Nov-2017: feature: The log object is now passed into initialize()
   # 24-Dec-2016: Bug fix: An argument can now include an integer
   # 12-Dec-2016: The cache size can now be changed from initialize()
   # 21-Jun-2016: Replaced the initialize hash options with inline named params
@@ -41,22 +42,17 @@ require 'rexle'
 
 class RScript < RScriptBase
 
-  def initialize(logfile: '', logrotate: 'daily', pkg_src: '', cache: 5)
+  def initialize(log: nil, pkg_src: '', cache: 5)
     
-    @logger = Logger.new logfile, logrotate unless logfile.nil? or logfile.empty?
+    @log = log
     @cache = cache
     @rsf_cache = HashCache.new({cache: cache}) if cache > 0
     
   end
   
   def read(args=[])
-
-    if @logger then
       
-      @logger.debug 'inside RScript#read' 
-      @logger.debug 'RScript -> args: ' + args.inspect
-      
-    end
+    @log.info 'RScript/read: args: '  + args.inspect if @log
     
     threads = []
     
@@ -83,9 +79,9 @@ class RScript < RScriptBase
       
     else    
       out = read_rsf(args) {|doc| doc.root.xpath('//script').map {|s| read_script(s)}}.join("\n")   
-    end
-    
-    @logger.debug 'RScript -> out: ' + out.inspect[0..250] if @logger
+    end    
+          
+    @log.info 'RScript/read: code: '  + out.inspect if @log
 
     [out, args]
   end
@@ -97,10 +93,7 @@ class RScript < RScriptBase
   # note: run() was copied from the development file rscript-wrapper.rb
   def run(raw_args, params={}, rws=self)
 
-    if @logger then
-      @logger.debug 'inside RScript#run' 
-      @logger.debug 'RScript -> raw_args: ' + raw_args.inspect
-    end
+    @log.info 'RScript/run: raw_args: ' + raw_args.inspect if @log
     
     if params[:splat] then
       params.each do  |k,v|
@@ -117,7 +110,8 @@ class RScript < RScriptBase
     end            
     
     code2, args = self.read raw_args
-    @logger.debug 'RScript -> code2: ' + code2.inspect[0..250] if @logger
+    
+    @log.info 'RScript/run: code2: ' + code2 if @log
     
     begin
       
