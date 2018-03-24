@@ -2,11 +2,13 @@
 
 # file: rscript.rb
 
-# created: 1-Jul-2009
-# updated: 7-Nov-2017
+# created:  1-Jul-2009
+# updated: 24-Mar-2018
 
 # modification:
 
+  # 24-Mar-2018: Bug fix: Public method run() can now correctly 
+  #               handle a param value of nil
   # 07-Nov-2017: feature: The log object is now passed into initialize()
   # 24-Dec-2016: Bug fix: An argument can now include an integer
   # 12-Dec-2016: The cache size can now be changed from initialize()
