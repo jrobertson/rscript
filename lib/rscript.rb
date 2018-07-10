@@ -3,10 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 24-Mar-2018
+# updated: 10-Jul-2018
 
 # modification:
 
+  # 10-Jul-2018: feature: Attributes can now be read from the job
   # 24-Mar-2018: Bug fix: Public method run() can now correctly 
   #               handle a param value of nil
   # 07-Nov-2017: feature: The log object is now passed into initialize()
@@ -19,6 +20,7 @@
   # 01-Nov-2013: XThreads now handles the execution of eval statements;
   # 08-Aug-2013: re-enabled the hashcache;
   # 24-Jun-2011: disabled the hashcache
+
 
 # description
 #  - This script executes Ruby script contained within an XML file.
