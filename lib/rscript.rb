@@ -46,37 +46,38 @@ require 'rexle'
 
 class RScript < RScriptBase
 
-  def initialize(log: nil, pkg_src: '', cache: 5)
+  def initialize(log: nil, pkg_src: '', cache: 5, debug: false, type: 'job')
     
     @log = log
     @cache = cache
     @rsf_cache = HashCache.new({cache: cache}) if cache > 0
+    @debug = debug
+    @jobname = type
     
   end
   
-  def read(args=[])
+  def read(raw_args=[])
       
+    args = raw_args.clone
     @log.info 'RScript/read: args: '  + args.inspect if @log
     
     threads = []
     
-    if args.to_s[/\/\/job:/] then 
-
-      ajob = []
-      
+    if args.to_s[/\/\/#{@jobname}:/] then 
+     ajob = '' 
       args.each_index do |i| 
-        if args[i].to_s[/\/\/job:/] then          
-          ajob << "@id='#{$'}'"; args[i] = nil
+        if args[i].to_s[/\/\/#{@jobname}:/] then          
+          ajob = "@id='#{$'}'"; args[i] = nil
+          puts 'ajob: ' + ajob.inspect
         end
       end
 
       args.compact!
 
-      out = read_rsf(args) do |doc|
-        doc.root.xpath("//job[#{ajob.join(' or ')}]").map do |job|
-          job.xpath('script').map {|s| read_script(s)}.join("\n")
-        end.join("\n")        
-      end
+      out, attr = read_rsf(args) do |doc|
+        job = doc.root.element("//#{@jobname}[#{ajob}]")
+        [job.xpath('script').map {|s| read_script(s)}.join("\n"), job.attributes]        
+      end      
 
       raise "job not found" unless out.length > 0
       out
@@ -87,7 +88,7 @@ class RScript < RScriptBase
           
     @log.info 'RScript/read: code: '  + out.inspect if @log
 
-    [out, args]
+    [out, args, attr]
   end
 
   def reset()
@@ -98,14 +99,15 @@ class RScript < RScriptBase
   def run(raw_args, params={}, rws=self)
 
     @log.info 'RScript/run: raw_args: ' + raw_args.inspect if @log
+    puts 'raw_args: ' + raw_args.inspect if @debug
     
-    if params[:splat] then
+    if params and params[:splat] then
       params.each do  |k,v|
         params.delete k unless k == :splat or k == :package or k == :job or k == :captures
       end
     end
 
-    if params[:splat] and params[:splat].length > 0 then
+    if params and params[:splat] and params[:splat].length > 0 then
       h = params[:splat].first[1..-1].split('&').inject({}) do |r,x| 
         k, v = x.split('=')
         v ? r.merge(k[/\w+$/].to_sym => v) : r
@@ -113,27 +115,13 @@ class RScript < RScriptBase
       params.merge! h
     end            
     
-    code2, args = self.read raw_args
-    
+    code2, args, attr = self.read raw_args.clone
+    puts 'code2 : ' + code2.inspect if @debug
     @log.info 'RScript/run: code2: ' + code2 if @log
     
     begin
       
-=begin      
-      thread = Thread.new(code2) do |x| 
-        
-        begin
-          Thread.current['result'] = eval x
-        rescue
-          @logger.debug('RScript -> eval: ' + ($!).inspect) if @logger
-        end
-        
-      end
-      thread.join
-=end      
-      #puts 'code2 :'  + code2.inspect
       r = eval code2
-      #r = thread['result']
 
       params = {}
 
@@ -142,6 +130,7 @@ class RScript < RScriptBase
     rescue Exception => e  
       params = {}
       err_label = e.message.to_s + " :: \n" + e.backtrace.join("\n")      
+      @log.debug 'rscrcript/error: ' + err_label
       return err_label
     end
 
@@ -151,6 +140,7 @@ class RScript < RScriptBase
       
   def read_rsf(args=[])
     
+    puts 'args: ' + args.inspect if @debug
     rsfile = args[0]; args.shift
     
     $rsfile = rsfile[/[^\/]+(?=\.rsf)/]
