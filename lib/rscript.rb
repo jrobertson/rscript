@@ -3,10 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 10-Jul-2018
+# updated: 13-Jul-2018
 
 # modification:
 
+  # 13-Jul-2018: bug fix: The use of a cache is now optional
   # 10-Jul-2018: feature: Attributes can now be read from the job
   # 24-Mar-2018: Bug fix: Public method run() can now correctly 
   #               handle a param value of nil
@@ -50,7 +51,7 @@ class RScript < RScriptBase
     
     @log = log
     @cache = cache
-    @rsf_cache = HashCache.new({cache: cache}) if cache > 0
+    @rsf_cache = HashCache.new({cache: cache}) if cache and cache > 0
     @debug = debug
     @jobname = type
     
