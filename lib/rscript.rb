@@ -3,10 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 13-Jul-2018
+# updated: 28-Jul-2018
 
 # modification:
 
+  # 28-Jul-2018: feature: Jobs are now looked up from a Hash object
   # 13-Jul-2018: bug fix: The use of a cache is now optional
   # 10-Jul-2018: feature: Attributes can now be read from the job
   # 24-Mar-2018: Bug fix: Public method run() can now correctly 
@@ -68,23 +69,21 @@ class RScript < RScriptBase
      ajob = '' 
       args.each_index do |i| 
         if args[i].to_s[/\/\/#{@jobname}:/] then          
-          ajob = "@id='#{$'}'"; args[i] = nil
-          puts 'ajob: ' + ajob.inspect
+          ajob = $'; args[i] = nil
         end
       end
 
       args.compact!
-
-      out, attr = read_rsf(args) do |doc|
-        job = doc.root.element("//#{@jobname}[#{ajob}]")
-        [job.xpath('script').map {|s| read_script(s)}.join("\n"), job.attributes]        
-      end      
+      
+      a = read_rsfdoc(args)      
+      job = a.assoc(ajob.to_sym)
+      out, attr = job[:code], job[:attributes]
 
       raise "job not found" unless out.length > 0
       out
       
     else    
-      out = read_rsf(args) {|doc| doc.root.xpath('//script').map {|s| read_script(s)}}.join("\n")   
+      out = read_rsfdoc(args).map {|x| x.last[:code]}.join("\n")
     end    
           
     @log.info 'RScript/read: code: '  + out.inspect if @log
@@ -138,26 +137,35 @@ class RScript < RScriptBase
   end  
   
   private    
-      
-  def read_rsf(args=[])
+  
+  def build_a(rsfile)
+    
+    buffer = read_sourcecode(rsfile) 
+    doc =  Rexle.new(buffer)
+
+    doc.root.xpath("//#{@jobname}").inject([]) do |r,x|
+      codeblock = x.xpath('//script')\
+          .map {|s| read_script(s)}.join("\n")
+      r << [x.attributes[:id].to_sym, {attributes: x.attributes, 
+                                            code: codeblock}]
+    end        
+    
+  end      
+  
+  def read_rsfdoc(args=[])
     
     puts 'args: ' + args.inspect if @debug
     rsfile = args[0]; args.shift
     
     $rsfile = rsfile[/[^\/]+(?=\.rsf)/]
     
-    buffer = if @cache then
-      @rsf_cache.read(rsfile) {read_sourcecode(rsfile) }
-    else
-      read_sourcecode(rsfile)
-    end
+    a = @cache ? @rsf_cache.read(rsfile) { build_a(rsfile) } : build_a(rsfile)
 
     @url_base = rsfile[/\w+:\/\/[^\/]+/]
+    
+    return a
 
-    doc =  Rexle.new(buffer)
-    yield(doc)
-
-  end          
+  end    
   
 end
 

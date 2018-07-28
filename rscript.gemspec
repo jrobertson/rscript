@@ -1,12 +1,12 @@
 Gem::Specification.new do |s|
   s.name = 'rscript'
-  s.version = '0.4.4'
+  s.version = '0.5.0'
   s.summary = 'Reads or executes a job contained within a ' + 
      'package (XML document), whereby the package is typically read from a URL'
   s.authors = ['James Robertson']
   s.files = Dir['lib/rscript.rb', 'lib/rscript_base.rb']
   s.add_runtime_dependency('hashcache', '~> 0.2', '>=0.2.10')
-  s.add_runtime_dependency('rxfhelper', '~> 0.6', '>=0.6.1')
+  s.add_runtime_dependency('rxfhelper', '~> 0.7', '>=0.7.0')
   s.add_runtime_dependency('rexle', '~> 1.4', '>=1.4.12')
   s.signing_key = '../privatekeys/rscript.pem'
   s.cert_chain  = ['gem-public_cert.pem']
