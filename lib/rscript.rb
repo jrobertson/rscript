@@ -3,10 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 28-Jul-2018
+# updated: 30-Jul-2018
 
 # modification:
 
+  # 30-Jul-2018: feature: A list of job ids can now be returned
   # 28-Jul-2018: feature: Jobs are now looked up from a Hash object
   # 13-Jul-2018: bug fix: The use of a cache is now optional
   # 10-Jul-2018: feature: Attributes can now be read from the job
@@ -58,6 +59,11 @@ class RScript < RScriptBase
     
   end
   
+  def jobs(package)
+    a = read_rsfdoc([package])  
+    a.map(&:first).uniq
+  end
+  
   def read(raw_args=[])
       
     args = raw_args.clone
@@ -77,7 +83,7 @@ class RScript < RScriptBase
       
       a = read_rsfdoc(args)      
       job = a.assoc(ajob.to_sym)
-      out, attr = job[:code], job[:attributes]
+      out, attr = job.last[:code], job.last[:attributes]
 
       raise "job not found" unless out.length > 0
       out

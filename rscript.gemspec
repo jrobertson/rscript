@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'rscript'
-  s.version = '0.5.0'
+  s.version = '0.5.2'
   s.summary = 'Reads or executes a job contained within a ' + 
      'package (XML document), whereby the package is typically read from a URL'
   s.authors = ['James Robertson']
