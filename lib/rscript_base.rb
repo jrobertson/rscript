@@ -8,7 +8,8 @@ require 'rxfhelper'
 
 class RScriptBase
   
-  def initialize()
+  def initialize(debug: false)
+    @debug = debug
   end
   
   def read(doc)
@@ -17,7 +18,8 @@ class RScriptBase
   
   protected
   
-  def read_script(script)  
+  def read_script(script)
+    puts 'inside read_script' if @debug
     out_buffer = ''
     
     src = script.attributes[:src]
@@ -32,15 +34,9 @@ class RScriptBase
   end
         
   def read_sourcecode(rsf)
-    
-    buffer, type = RXFHelper.read rsf
-    
-    case type
-      when :url, :file
-        buffer
-      when :relative_url
-        open(@url_base + rsf, "UserAgent" => "rscript"){|x| x.read}
-    end
+    puts 'inside read_sourcecode' if @debug
+    buffer, _ = RXFHelper.read rsf, auto: false
+    return buffer
   end          
   
 end

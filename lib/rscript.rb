@@ -3,10 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 30-Jul-2018
+# updated: 11-Aug-2018
 
 # modification:
 
+  # 11-Aug-2018: Added the keyword auto: false to RxfHelper for clarity
   # 30-Jul-2018: feature: A list of job ids can now be returned
   # 28-Jul-2018: feature: Jobs are now looked up from a Hash object
   # 13-Jul-2018: bug fix: The use of a cache is now optional
@@ -47,137 +48,37 @@ require 'hashcache'
 require 'rexle'
 
 
-class RScript < RScriptBase
-
-  def initialize(log: nil, pkg_src: '', cache: 5, debug: false, type: 'job')
-    
-    @log = log
-    @cache = cache
-    @rsf_cache = HashCache.new({cache: cache}) if cache and cache > 0
+class RScriptBase
+  
+  def initialize(debug: false)
     @debug = debug
-    @jobname = type
-    
   end
   
-  def jobs(package)
-    a = read_rsfdoc([package])  
-    a.map(&:first).uniq
+  def read(doc)
+    doc.root.xpath('//script').map {|s| run_script(s)}.join(';')
   end
   
-  def read(raw_args=[])
-      
-    args = raw_args.clone
-    @log.info 'RScript/read: args: '  + args.inspect if @log
+  protected
+  
+  def read_script(script)
+    puts 'inside read_script' if @debug
+    out_buffer = ''
     
-    threads = []
-    
-    if args.to_s[/\/\/#{@jobname}:/] then 
-     ajob = '' 
-      args.each_index do |i| 
-        if args[i].to_s[/\/\/#{@jobname}:/] then          
-          ajob = $'; args[i] = nil
-        end
-      end
+    src = script.attributes[:src]
 
-      args.compact!
-      
-      a = read_rsfdoc(args)      
-      job = a.assoc(ajob.to_sym)
-      out, attr = job.last[:code], job.last[:attributes]
-
-      raise "job not found" unless out.length > 0
-      out
-      
-    else    
-      out = read_rsfdoc(args).map {|x| x.last[:code]}.join("\n")
-    end    
-          
-    @log.info 'RScript/read: code: '  + out.inspect if @log
-
-    [out, args, attr]
-  end
-
-  def reset()
-    @rsf_cache.reset
-  end
-
-  # note: run() was copied from the development file rscript-wrapper.rb
-  def run(raw_args, params={}, rws=self)
-
-    @log.info 'RScript/run: raw_args: ' + raw_args.inspect if @log
-    puts 'raw_args: ' + raw_args.inspect if @debug
-    
-    if params and params[:splat] then
-      params.each do  |k,v|
-        params.delete k unless k == :splat or k == :package or k == :job or k == :captures
-      end
+    out_buffer = if src then
+      read_sourcecode(script.attributes[:src].to_s)
+    else
+      script.texts.join("\n")
     end
-
-    if params and params[:splat] and params[:splat].length > 0 then
-      h = params[:splat].first[1..-1].split('&').inject({}) do |r,x| 
-        k, v = x.split('=')
-        v ? r.merge(k[/\w+$/].to_sym => v) : r
-      end
-      params.merge! h
-    end            
     
-    code2, args, attr = self.read raw_args.clone
-    puts 'code2 : ' + code2.inspect if @debug
-    @log.info 'RScript/run: code2: ' + code2 if @log
-    
-    begin
-      
-      r = eval code2
-
-      params = {}
-
-      return r          
-
-    rescue Exception => e  
-      params = {}
-      err_label = e.message.to_s + " :: \n" + e.backtrace.join("\n")      
-      @log.debug 'rscrcript/error: ' + err_label
-      return err_label
-    end
-
-  end  
+    out_buffer
+  end
+        
+  def read_sourcecode(rsf)
+    puts 'inside read_sourcecode' if @debug
+    buffer, _ = RXFHelper.read rsf, auto: false
+    return buffer
+  end          
   
-  private    
-  
-  def build_a(rsfile)
-    
-    buffer = read_sourcecode(rsfile) 
-    doc =  Rexle.new(buffer)
-
-    doc.root.xpath("//#{@jobname}").inject([]) do |r,x|
-      codeblock = x.xpath('//script')\
-          .map {|s| read_script(s)}.join("\n")
-      r << [x.attributes[:id].to_sym, {attributes: x.attributes, 
-                                            code: codeblock}]
-    end        
-    
-  end      
-  
-  def read_rsfdoc(args=[])
-    
-    puts 'args: ' + args.inspect if @debug
-    rsfile = args[0]; args.shift
-    
-    $rsfile = rsfile[/[^\/]+(?=\.rsf)/]
-    
-    a = @cache ? @rsf_cache.read(rsfile) { build_a(rsfile) } : build_a(rsfile)
-
-    @url_base = rsfile[/\w+:\/\/[^\/]+/]
-    
-    return a
-
-  end    
-  
-end
-
-if __FILE__ == $0 then
-  raw_args = ARGV
-  rs = RScript.new()
-  code, args = rs.read(raw_args)
-  puts eval(code).join("\n")
 end
