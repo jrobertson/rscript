@@ -3,11 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 11-Aug-2018
+# updated: 13-Oct-2018
 
 # modification:
 
-  # 11-Aug-2018: Added the keyword auto: false to RxfHelper for clarity
+  # 13-Oct-2018: bug fix: The log is now only written when the log exists
   # 30-Jul-2018: feature: A list of job ids can now be returned
   # 28-Jul-2018: feature: Jobs are now looked up from a Hash object
   # 13-Jul-2018: bug fix: The use of a cache is now optional
@@ -25,7 +25,6 @@
   # 08-Aug-2013: re-enabled the hashcache;
   # 24-Jun-2011: disabled the hashcache
 
-
 # description
 #  - This script executes Ruby script contained within an XML file.
 #  - The XML file can be stored locally or on a website.
@@ -42,10 +41,17 @@
 # MIT license - basically you can do anything you like with the script.
 #  http://www.opensource.org/licenses/mit-license.php
 
+#=begin
+require 'requestor'
 
-require 'rscript_base'
-require 'hashcache'
-require 'rexle'
+code = Requestor.read('http://a0.jamesrobertson.eu/rorb/r/ruby/') do |x|
+  x.require 'rscript_base'
+  x.require 'hashcache'
+  x.require 'rexle'
+end
+eval code
+#=end
+
 
 
 class RScript < RScriptBase
@@ -139,7 +145,7 @@ class RScript < RScriptBase
     rescue Exception => e  
       params = {}
       err_label = e.message.to_s + " :: \n" + e.backtrace.join("\n")      
-      @log.debug 'rscrcript/error: ' + err_label
+      @log.debug 'rscrcript/error: ' + err_label if @log
       return err_label
     end
 
