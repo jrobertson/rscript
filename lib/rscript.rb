@@ -47,61 +47,6 @@ require 'hashcache'
 require 'rexle'
 
 
-class RScriptRW < RScript
-  
-  attr_accessor :type
-  
-  
-  def read(args=[])
-    
-    puts 'inside read' if @debug
-    @log.info 'RScript/read: args: '  + args.inspect if @log
-    @log.info 'RScript/read: type: '  + type.inspect if @log
-    
-    threads = []
-    
-    if args.to_s[/\/\/job:/] then 
-
-      ajob = ''
-      
-      args.each_index do |i| 
-        if args[i].to_s[/\/\/job:/] then          
-          ajob = $'; args[i] = nil
-        end
-      end
-
-      args.compact!
-      
-      if @debug then
-        puts 'type: ' + self.type.to_s.inspect
-        puts 'self.type: '  + self.type.to_s.inspect
-      end
-
-      a = read_rsfdoc(args)      
-      job = a.find do |xy| 
-        name, x = xy
-        name == ajob.to_sym and 
-            (x[:attributes][:type] || self.type.to_s) == self.type.to_s
-      end.last
-
-      out, attr = job[:code], job[:attributes]      
-      
-      raise "job not found" unless out.length > 0
-      out
-      
-    else    
-      out = read_rsfdoc(args).map {|x| x.last[:code]}.join("\n")
-    end    
-          
-    @log.info 'RScript/read: code: '  + out.inspect if @log
-
-    [out, args]    
-    
-  end
-  
-end
-
-
 class RScript < RScriptBase
 
   def initialize(log: nil, pkg_src: '', cache: 5, debug: false, type: 'job')
@@ -236,6 +181,62 @@ class RScript < RScriptBase
   end    
   
 end
+
+
+class RScriptRW < RScript
+  
+  attr_accessor :type
+  
+  
+  def read(args=[])
+    
+    puts 'inside read' if @debug
+    @log.info 'RScript/read: args: '  + args.inspect if @log
+    @log.info 'RScript/read: type: '  + type.inspect if @log
+    
+    threads = []
+    
+    if args.to_s[/\/\/job:/] then 
+
+      ajob = ''
+      
+      args.each_index do |i| 
+        if args[i].to_s[/\/\/job:/] then          
+          ajob = $'; args[i] = nil
+        end
+      end
+
+      args.compact!
+      
+      if @debug then
+        puts 'type: ' + self.type.to_s.inspect
+        puts 'self.type: '  + self.type.to_s.inspect
+      end
+
+      a = read_rsfdoc(args)      
+      job = a.find do |xy| 
+        name, x = xy
+        name == ajob.to_sym and 
+            (x[:attributes][:type] || self.type.to_s) == self.type.to_s
+      end.last
+
+      out, attr = job[:code], job[:attributes]      
+      
+      raise "job not found" unless out.length > 0
+      out
+      
+    else    
+      out = read_rsfdoc(args).map {|x| x.last[:code]}.join("\n")
+    end    
+          
+    @log.info 'RScript/read: code: '  + out.inspect if @log
+
+    [out, args]    
+    
+  end
+  
+end
+
 
 if __FILE__ == $0 then
   raw_args = ARGV
