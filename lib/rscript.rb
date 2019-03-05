@@ -3,10 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 13-Oct-2018
+# updated: 05-Mar-2019
 
 # modification:
 
+  # 05-Mar-2019: feature: Added the class RScriptRW for :get, :post typed jobs
   # 13-Oct-2018: bug fix: The log is now only written when the log exists
   # 30-Jul-2018: feature: A list of job ids can now be returned
   # 28-Jul-2018: feature: Jobs are now looked up from a Hash object
@@ -41,17 +42,64 @@
 # MIT license - basically you can do anything you like with the script.
 #  http://www.opensource.org/licenses/mit-license.php
 
-#=begin
-require 'requestor'
+require 'rscript_base'
+require 'hashcache'
+require 'rexle'
 
-code = Requestor.read('http://a0.jamesrobertson.eu/rorb/r/ruby/') do |x|
-  x.require 'rscript_base'
-  x.require 'hashcache'
-  x.require 'rexle'
+
+class RScriptRW < RScript
+  
+  attr_accessor :type
+  
+  
+  def read(args=[])
+    
+    puts 'inside read' if @debug
+    @log.info 'RScript/read: args: '  + args.inspect if @log
+    @log.info 'RScript/read: type: '  + type.inspect if @log
+    
+    threads = []
+    
+    if args.to_s[/\/\/job:/] then 
+
+      ajob = ''
+      
+      args.each_index do |i| 
+        if args[i].to_s[/\/\/job:/] then          
+          ajob = $'; args[i] = nil
+        end
+      end
+
+      args.compact!
+      
+      if @debug then
+        puts 'type: ' + self.type.to_s.inspect
+        puts 'self.type: '  + self.type.to_s.inspect
+      end
+
+      a = read_rsfdoc(args)      
+      job = a.find do |xy| 
+        name, x = xy
+        name == ajob.to_sym and 
+            (x[:attributes][:type] || self.type.to_s) == self.type.to_s
+      end.last
+
+      out, attr = job[:code], job[:attributes]      
+      
+      raise "job not found" unless out.length > 0
+      out
+      
+    else    
+      out = read_rsfdoc(args).map {|x| x.last[:code]}.join("\n")
+    end    
+          
+    @log.info 'RScript/read: code: '  + out.inspect if @log
+
+    [out, args]    
+    
+  end
+  
 end
-eval code
-#=end
-
 
 
 class RScript < RScriptBase
