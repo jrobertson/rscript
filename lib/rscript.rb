@@ -3,10 +3,12 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 05-Mar-2019
+# updated: 00-Mar-2019
 
 # modification:
 
+  # 00-Mar-2019: feature: An explicit path or implicit path now can be 
+  #                       specified in the src attribute
   # 05-Mar-2019: feature: Added the class RScriptRW for :get, :post typed jobs
   # 13-Oct-2018: bug fix: The log is now only written when the log exists
   # 30-Jul-2018: feature: A list of job ids can now be returned
@@ -169,13 +171,17 @@ class RScript < RScriptBase
     puts 'args: ' + args.inspect if @debug
     rsfile = args[0]; args.shift
     
+    url = File.dirname  rsfile
+    @url_dir = url[/(?:\w+:\/\/|.*)[^\/]*(\/.*)/,1]
+    @url_base = url[/(\w+:\/\/[^\/]+|.*)/]   
+    
     $rsfile = rsfile[/[^\/]+(?=\.rsf)/]
     
     a = @cache ? @rsf_cache.read(rsfile) { build_a(rsfile) } : build_a(rsfile)
     puts 'read_rsfdoc a: ' + a.inspect if @debug
 
-    @url_base = rsfile[/\w+:\/\/[^\/]+/]
-    
+
+        
     return a
 
   end    

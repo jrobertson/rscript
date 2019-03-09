@@ -7,6 +7,7 @@ require 'open-uri'
 require 'rxfhelper'
 
 class RScriptBase
+  using ColouredText
   
   def initialize(debug: false)
     @debug = debug
@@ -19,7 +20,7 @@ class RScriptBase
   protected
   
   def read_script(script)
-    puts 'inside read_script' if @debug
+    puts 'inside read_script'.info if @debug
     out_buffer = ''
     
     src = script.attributes[:src]
@@ -34,8 +35,20 @@ class RScriptBase
   end
         
   def read_sourcecode(rsf)
-    puts 'inside read_sourcecode' if @debug
-    buffer, _ = RXFHelper.read rsf, auto: false
+    
+    puts 'inside read_sourcecode'.info if @debug
+    #@log.debug 'rsf: ' + rsf.inspect if @log
+    #@log.debug 'url_base: ' + @url_base.inspect if @log
+    
+    path = case rsf
+    when /^\// 
+      @url_base =~ /^\// ? rsf : File.join(@url_base, rsf) 
+    when /\w+:/ then rsf  
+    else
+      File.join(@url_base, @url_dir, rsf)
+    end
+    
+    buffer, _ = RXFHelper.read path, auto: false
     return buffer
   end          
   
