@@ -3,10 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 00-Mar-2019
+# updated: 22-Feb-2022
 
 # modification:
 
+  # 21-Feb-2022: minor improvement: Replaced RXFHelper with RXFReader
   # 00-Mar-2019: feature: An explicit path or implicit path now can be 
   #                       specified in the src attribute
   # 05-Mar-2019: feature: Added the class RScriptRW for :get, :post typed jobs
