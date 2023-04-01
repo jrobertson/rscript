@@ -3,13 +3,11 @@
 # file: rscript.rb
 
 # created:  1-Jul-2009
-# updated: 22-Feb-2022
+# updated: 01-Apr-2023
 
 # modification:
 
-  # 21-Feb-2022: minor improvement: Replaced RXFHelper with RXFReader
-  # 00-Mar-2019: feature: An explicit path or implicit path now can be 
-  #                       specified in the src attribute
+  # 01-Apr-2023: feature: Added the *jobs_desc* public method
   # 05-Mar-2019: feature: Added the class RScriptRW for :get, :post typed jobs
   # 13-Oct-2018: bug fix: The log is now only written when the log exists
   # 30-Jul-2018: feature: A list of job ids can now be returned
@@ -45,15 +43,25 @@
 # MIT license - basically you can do anything you like with the script.
 #  http://www.opensource.org/licenses/mit-license.php
 
-require 'rscript_base'
-require 'hashcache'
-require 'rexle'
+#=begin
+require 'requestor'
+
+code = Requestor.read('http://a0.jamesrobertson.me.uk/rorb/r/ruby/') do |x|
+  x.require 'rscript_base'
+  x.require 'hashcache'
+  x.require 'rexle'
+end
+eval code
+#=end
+
+
 
 
 class RScript < RScriptBase
 
   def initialize(log: nil, pkg_src: '', cache: 5, debug: false, type: 'job')
     
+    @debug = debug
     puts 'inside RScript' if @debug
     @log = log
     @cache = cache
@@ -63,10 +71,17 @@ class RScript < RScriptBase
     
   end
   
+  # note: the package should include the full path to the file
+  #
   def jobs(package)
     a = read_rsfdoc([package])  
     a.map(&:first).uniq
   end
+  
+  def jobs_desc(package)
+    a = read_rsfdoc([package])  
+    a.map {|x| [x[0], x[1][:attributes][:desc]]}.to_h
+  end  
   
   def read(raw_args=[])
       
@@ -94,7 +109,7 @@ class RScript < RScriptBase
       out
       
     else    
-      out = read_rsfdoc(args).map {|x| x.last[:code]}.join("\n")
+      out = read_rsfdoc(args).map {|x| puts '2x:' + x.inspect; x.last[:code]}.join("\n")
     end    
           
     @log.info 'RScript/read: code: '  + out.inspect if @log
@@ -114,7 +129,8 @@ class RScript < RScriptBase
     
     if params and params[:splat] then
       params.each do  |k,v|
-        params.delete k unless k == :splat or k == :package or k == :job or k == :captures
+        params.delete k unless k == :splat or k == :package or 
+            k == :job or k == :captures
       end
     end
 
@@ -171,6 +187,7 @@ class RScript < RScriptBase
     
     puts 'args: ' + args.inspect if @debug
     rsfile = args[0]; args.shift
+    puts 'rsfile: ' + rsfile.inspect if @debug
     
     url = File.dirname  rsfile
     @url_dir = url[/(?:\w+:\/\/|.*)[^\/]*(\/.*)/,1]
@@ -220,12 +237,14 @@ class RScriptRW < RScript
         puts 'self.type: '  + self.type.to_s.inspect
       end
 
-      a = read_rsfdoc(args)      
-      job = a.find do |xy| 
+      a = read_rsfdoc(args)
+      found = a.find do |xy| 
         name, x = xy
         name == ajob.to_sym and 
             (x[:attributes][:type] || self.type.to_s) == self.type.to_s
-      end.last
+      end
+      puts 'found: ' + found.inspect if @debug
+      found ? job = found.last : raise('job not found')
 
       out, attr = job[:code], job[:attributes]      
       
@@ -233,7 +252,10 @@ class RScriptRW < RScript
       out
       
     else    
-      out = read_rsfdoc(args).map {|x| x.last[:code]}.join("\n")
+      out = read_rsfdoc(args).map do |x|
+        puts 'x: ' + x.inspect if @debug
+        x.last[:code]
+      end.join("\n")
     end    
           
     @log.info 'RScript/read: code: '  + out.inspect if @log

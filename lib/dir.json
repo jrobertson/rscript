@@ -1,0 +1,85 @@
+{
+  "directory": {
+    "summary": {
+      "schema": "directory[title, file_path,  last_modified, description]/file(name, type, ext, mtime, description)",
+      "recordx_type": "dynarex",
+      "default_key": "name",
+      "title": "Index of /home/james/gem_src/rscript/lib",
+      "file_path": "/home/james/gem_src/rscript/lib",
+      "last_modified": "2022-03-06 12:20:17 +0000",
+      "description": null
+    },
+    "records": [
+      {
+        "file": {
+          "id": "1",
+          "created": "2022-03-06 12:20:17 +0000",
+          "last_modified": null,
+          "body": {
+            "name": "rscript_base.rb~",
+            "type": "file",
+            "ext": ".rb~",
+            "mtime": "2019-11-22 17:42:41 +0000",
+            "description": ""
+          }
+        }
+      },
+      {
+        "file": {
+          "id": "2",
+          "created": "2022-03-06 12:20:17 +0000",
+          "last_modified": null,
+          "body": {
+            "name": "rscript_base.rb",
+            "type": "file",
+            "ext": ".rb",
+            "mtime": "2022-02-21 15:11:04 +0000",
+            "description": ""
+          }
+        }
+      },
+      {
+        "file": {
+          "id": "3",
+          "created": "2022-03-06 12:20:17 +0000",
+          "last_modified": null,
+          "body": {
+            "name": "rscript.rb~",
+            "type": "file",
+            "ext": ".rb~",
+            "mtime": "2019-11-22 17:42:41 +0000",
+            "description": ""
+          }
+        }
+      },
+      {
+        "file": {
+          "id": "4",
+          "created": "2022-03-06 12:20:17 +0000",
+          "last_modified": null,
+          "body": {
+            "name": "rscript.rb",
+            "type": "file",
+            "ext": ".rb",
+            "mtime": "2022-02-21 15:13:10 +0000",
+            "description": ""
+          }
+        }
+      },
+      {
+        "file": {
+          "id": "5",
+          "created": "2022-03-06 12:20:17 +0000",
+          "last_modified": null,
+          "body": {
+            "name": "rscript",
+            "type": "directory",
+            "ext": "",
+            "mtime": "2019-11-22 17:42:41 +0000",
+            "description": ""
+          }
+        }
+      }
+    ]
+  }
+}
